@@ -58,14 +58,23 @@ def read_constraints(filename: str):
     return constraints
 
 def build_graph(constraints: dict[int: list[int]], user_choice: list[int]) -> dict:
+    """
+    Stadnik Oleksandr
+    """
     pass
 
 def build_tarjans_sccs(graph: dict) -> list:
+    """
+    Solomia Gadiychuk
+    """
     def strong_connection(v: int) -> None:
         pass
     pass
 
 def is_satisfiable(constraints: dict[int: list[int]], user_choice: list[int]) -> bool:
+    """
+    Anna Kryvulia
+    """
     pass
 
 def main():
