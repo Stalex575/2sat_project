@@ -1,3 +1,25 @@
+import argparse
+
+def read_from_terminal() -> tuple[str, str, list[int]]:
+    """
+    Reads input data from the command line and returns it as a tuple.
+
+    Parameters:
+    - --m (str): 
+    - --r (str): 
+    - --c (str): 
+
+    Returns:
+    - tuple[str, str, list[int]]
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--m', type=str, required=True)
+    parser.add_argument('--r', type=str, required=True)
+    parser.add_argument('--c', type=str, required=True)
+    args = parser.parse_args()
+    id_users = [int(x) for x in args.c.split(',')]
+    return (args.m, args.r, id_users)
+
 def read_mode(filename:str) -> dict:
     """
 Reads a file containing modification data and returns a dictionary
