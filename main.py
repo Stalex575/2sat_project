@@ -16,5 +16,5 @@ is a tuple (name: str, user: int).
                 print('Неправильно написані дані,будь ласка, відкоригуйте файл!')
                 break
             id, name, user = i
-            modifications_dict[int(id)] = (name,int(user))
+            modifications_dict[int(id)] = (name.strip(),int(user))
     return modifications_dict
