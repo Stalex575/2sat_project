@@ -44,7 +44,7 @@ is a tuple (name: str, user_visibility: int).
             modifications_dict[int(mod_id)] = (name.strip(),int(user_visibility))
     return modifications_dict
 
-def read_constraints(filename: str):
+def read_constraints(filename: str) -> dict[int: list[int]]:
     constraints = {}
     with open(filename, mode='r', encoding='utf-8') as f:
         f.readline()
@@ -61,21 +61,27 @@ def build_graph(constraints: dict[int: list[int]], user_choice: list[int]) -> di
     """
     Stadnik Oleksandr
     """
-    pass
+    # NOT FINISHED!
+    # make dicts with x[1], x[2] .. x[n] to be able to give x's bool values.
+    # if x[n] is assigned value more than once, 2sat fails.
+    # return табличку з деталями, які треба встановити
+    graph = {}
 
-def build_tarjans_sccs(graph: dict) -> list:
-    """
-    Solomia Gadiychuk
-    """
-    def strong_connection(v: int) -> None:
-        pass
-    pass
-
-def is_satisfiable(constraints: dict[int: list[int]], user_choice: list[int]) -> bool:
-    """
-    Anna Kryvulia
-    """
-    pass
+    for mod_id, requirements in constraints.items():
+        if mod_id in user_choice or mod_id in graph:
+        # the second condition is to catch the required submods and assign constraints
+            graph[mod_id] = requirements
+            for submod_id in requirements:
+                if submod_id > 0:  # Positive submod means it's required, so add to graph
+                    if submod_id not in graph:
+                        graph[submod_id] = []  # Create an entry for the required submod
+        else:  # If mod_id is not in user_choice, handle negations (not selected)
+            graph[-mod_id] = [-submod_id if submod_id > 0 else submod_id for submod_id in requirements]
+            for submod_id in requirements:
+                if submod_id > 0:
+                    if -submod_id not in graph:
+                        graph[-submod_id] = []
+    return graph
 
 def main():
     constraints = read_constraints('')
