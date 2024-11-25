@@ -44,7 +44,7 @@ is a tuple (name: str, user_visibility: int).
             modifications_dict[int(mod_id)] = (name.strip(),int(user_visibility))
     return modifications_dict
 
-def read_constraints(filename: str) -> dict[int: list[int]]:
+def read_graph(filename: str) -> dict[int: list[int]]:
     constraints = {}
     with open(filename, mode='r', encoding='utf-8') as f:
         f.readline()
@@ -57,32 +57,25 @@ def read_constraints(filename: str) -> dict[int: list[int]]:
             if conflicts != ['']] + [int(num) for num in requirements if line[2] != ''])
     return constraints
 
-def build_graph(constraints: dict[int: list[int]], user_choice: list[int]) -> dict:
-    """
-    Stadnik Oleksandr
-    """
-    # NOT FINISHED!
-    # make dicts with x[1], x[2] .. x[n] to be able to give x's bool values.
-    # if x[n] is assigned value more than once, 2sat fails.
-    # return табличку з деталями, які треба встановити
-    graph = {}
+def satisfy(graph: dict[int, list[int]], user_choice: list[int], all_mods: dict[int: (str, int)]) -> dict[int, bool]:
+    use_modifications = {mod_id: None for mod_id in graph.keys()}
+    for mod in user_choice:
+        use_modifications[mod] = True
+        for submod in graph[mod]:
+            if use_modifications[abs(submod)] is None:
+                if submod > 0:
+                    use_modifications[abs(submod)] = True
+                else:
+                    use_modifications[abs(submod)] = False
+            else:
+                raise ValueError('Incompatible modifications.')
+    for mod_id, properties in all_mods.items():
+        if use_modifications[mod_id] is None and properties[1] == 1:
+            use_modifications[mod_id] = False
+    return use_modifications
 
-    for mod_id, requirements in constraints.items():
-        if mod_id in user_choice or mod_id in graph:
-        # the second condition is to catch the required submods and assign constraints
-            graph[mod_id] = requirements
-            for submod_id in requirements:
-                if submod_id > 0:  # Positive submod means it's required, so add to graph
-                    if submod_id not in graph:
-                        graph[submod_id] = []  # Create an entry for the required submod
-        else:  # If mod_id is not in user_choice, handle negations (not selected)
-            graph[-mod_id] = [-submod_id if submod_id > 0 else submod_id for submod_id in requirements]
-            for submod_id in requirements:
-                if submod_id > 0:
-                    if -submod_id not in graph:
-                        graph[-submod_id] = []
-    return graph
+# test inputs, delete later
 
-def main():
-    constraints = read_constraints('')
-    modifications = read_mods('')
+# print(satisfy(read_graph('restrictions.txt'), [1, 11, 16], read_mods('modifications.txt')))
+# print(read_mods('modifications.txt'))
+# print(read_graph('restrictions.txt'))
