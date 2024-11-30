@@ -102,8 +102,8 @@ def satisfy(graph: dict[int, list[int]], user_choice: list[int],\
                 use_modifications[abs(mod_id)] = True
                 handle_submods(abs(mod_id), use_modifications, graph)
             # if the submod is conflicting or if it is already set to False
-            elif use_modifications[abs(mod_id)] is False or \
-            use_modifications[abs(mod_id)] is None:
+            elif mod_id < 0 and (use_modifications[abs(mod_id)] is False or \
+            use_modifications[abs(mod_id)] is None):
                 use_modifications[abs(mod_id)] = False
 
             else:
@@ -122,6 +122,6 @@ def satisfy(graph: dict[int, list[int]], user_choice: list[int],\
 
 # test inputs, delete later
 
-print(satisfy(read_graph('restrictions.txt'), [1, 3], read_mods('modifications.txt')))
+print(satisfy(read_graph('restrictions.txt'), [1, 7], read_mods('modifications.txt')))
 # print(read_mods('modifications.txt'))
 # print(read_graph('restrictions.txt'))
