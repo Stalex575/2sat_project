@@ -96,8 +96,9 @@ def satisfy(graph: dict[int, list[int]], user_choice: list[int],\
         - graph (dict): A dictionary where the key is the mod_id and the value is a list of submods.
         """
         for mod_id in graph[submod]:
-            # if the submod is required and is unset in the dict, set it to True
-            if mod_id > 0 and use_modifications[abs(mod_id)] is None:
+            # if the submod is required and is unset in the dict or is set to True, set it to True
+            if mod_id > 0 and (use_modifications[abs(mod_id)] is None or\
+                use_modifications[abs(mod_id)] is True):
                 use_modifications[abs(mod_id)] = True
                 handle_submods(abs(mod_id), use_modifications, graph)
             # if the submod is conflicting or if it is already set to False
@@ -129,6 +130,6 @@ def satisfy(graph: dict[int, list[int]], user_choice: list[int],\
 
 # test inputs, delete later
 
-# print(satisfy(read_graph('restrictions.txt'), [1, 11, 16], read_mods('modifications.txt')))
+# print(satisfy(read_graph('restrictions.txt'), [1, 7], read_mods('modifications.txt')))
 # print(read_mods('modifications.txt'))
 # print(read_graph('restrictions.txt'))
