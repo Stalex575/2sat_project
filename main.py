@@ -129,6 +129,6 @@ def satisfy(graph: dict[int, list[int]], user_choice: list[int],\
 
 # test inputs, delete later
 
-# print(satisfy(read_graph('restrictions.txt'), [1, 11], read_mods('modifications.txt')))
+# print(satisfy(read_graph('restrictions.txt'), [1, 11, 16], read_mods('modifications.txt')))
 # print(read_mods('modifications.txt'))
 # print(read_graph('restrictions.txt'))
