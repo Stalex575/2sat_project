@@ -112,15 +112,7 @@ def satisfy(graph: dict[int, list[int]], user_choice: list[int],\
     use_modifications = {mod_id: None for mod_id in graph.keys()}
     for mod in user_choice:
         use_modifications[mod] = True
-        for submod in graph[mod]:
-            if use_modifications[abs(submod)] is None:
-                if submod > 0:
-                    use_modifications[abs(submod)] = True
-                    handle_submods(abs(submod), use_modifications, graph)
-                else:
-                    use_modifications[abs(submod)] = False
-            else:
-                raise ValueError('Incompatible modifications.')
+        handle_submods(mod, use_modifications, graph)
     for mod_id, properties in all_mods.items():
         # if value is unset and the mod is visible to the user
         if use_modifications[mod_id] is None and properties[1] == 1:
@@ -130,6 +122,6 @@ def satisfy(graph: dict[int, list[int]], user_choice: list[int],\
 
 # test inputs, delete later
 
-# print(satisfy(read_graph('restrictions.txt'), [1, 7], read_mods('modifications.txt')))
+print(satisfy(read_graph('restrictions.txt'), [1, 3], read_mods('modifications.txt')))
 # print(read_mods('modifications.txt'))
 # print(read_graph('restrictions.txt'))
