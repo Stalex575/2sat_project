@@ -3,6 +3,9 @@
 """
 import argparse
 import pandas as pd
+import re
+from openpyxl import Workbook, load_workbook
+from openpyxl.styles import Font
 
 def read_from_terminal() -> tuple[str, str, list[int]]:
     """
@@ -28,6 +31,7 @@ Return dictionary {key(mod_id): (name,user_visibility)}
 :param filename: The path to the file containing the modification data.
 :return modifications_dict: A dictionary where the key is mod_id and the value\
 is a tuple (name: str, user_visibility: int).
+
     """
     with open(filename, encoding='utf-8') as f:
         modifications_dict = {}
@@ -97,6 +101,19 @@ def read_constraints(filename: str, sheet_name: str) -> dict[int, list[int]]:
     Reads a specific sheet from an Excel file containing constraint data 
     and returns a dictionary where the key is the mod_id and the value 
     is a list of submods (conflicts and requirements).
+
+    >>> import pandas as pd
+    >>> test_file = "test_constraints.xlsx"
+    >>> data = {
+    ...     "id": [1, 2, 3, 4],
+    ...     "conflicting id": ["", "3", "2, 11", ""],
+    ...     "must id": [10, "", "", "12, 13"]
+    ... }
+    >>> df = pd.DataFrame(data)
+    >>> with pd.ExcelWriter(test_file) as writer:
+    ...     df.to_excel(writer, sheet_name="Constraints", index=False)
+    >>> read_constraints(test_file, "Constraints")
+    {1: [10], 2: [-3], 3: [-2, -11], 4: [12, 13]}
     """
     
     data = pd.read_excel(filename, sheet_name=sheet_name)
@@ -124,9 +141,7 @@ def read_constraints(filename: str, sheet_name: str) -> dict[int, list[int]]:
     
     return constraints_dict
 
-import re
-from openpyxl import Workbook, load_workbook
-from openpyxl.styles import Font
+
 
 def write_modifications_to_excel(filename: str, sheet_name: str, input_data: str):
     """
@@ -136,6 +151,7 @@ def write_modifications_to_excel(filename: str, sheet_name: str, input_data: str
     :param filename: Path to the Excel file.
     :param sheet_name: Name of the new sheet to add.
     :param input_data: Input string containing modifications in a specific format.
+    
     """
     try:
         required_format = r"Модифікації:.*сумісні.*Необхідні модифікації та підмодифікації:.*"
@@ -183,7 +199,7 @@ def write_modifications_to_excel(filename: str, sheet_name: str, input_data: str
             workbook.save(filename)
         print(f"Data successfully written to '{sheet_name}' in '{filename}'.")
 
-    except Exception as e:
+    except Exception:
         print(input_data)
 
 
@@ -259,3 +275,6 @@ def main():
     except ValueError:
         return f'Модифікації: {', '.join(el for el in [f"{i} - {mods_dict[i][0]}" for i in user_input])} несумісні'
 write_modifications_to_excel("combined_modifications.xlsx", "result", main())
+if __name__ == '__main__':
+    import doctest
+    print(doctest.testmod())
