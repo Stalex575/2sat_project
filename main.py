@@ -92,35 +92,38 @@ def read_exel_mods(filename: str, sheet_name: str) -> dict:
     }
     return modifications_dict
 
-def read_constraints(filename: str, sheet_name: str) -> dict:
+def read_constraints(filename: str, sheet_name: str) -> dict[int, list[int]]:
     """
     Reads a specific sheet from an Excel file containing constraint data 
-    and returns a dictionary where the key is the constraint id 
-    and the value is a tuple (type, value).
-    
-    :param filename: The path to the Excel file containing the constraint data.
-    :param sheet_name: The name of the sheet to read from the Excel file.
-    :return: A dictionary {key(id): (type: str, value: any)}.
-
-    >>> import pandas as pd
-    >>> data = {'id': [1, 2, 3], 'conflicting id': ['Max', 'Min', 'Fixed'], \
-'must id': [100, 10, 50]}
-    >>> df = pd.DataFrame(data)
-    >>> df.to_excel('test_constraints.xlsx', sheet_name='Constraints', index=False)
-    >>> read_constraints('test_constraints.xlsx', 'Constraints')
-    {1: ('Max', 100), 2: ('Min', 10), 3: ('Fixed', 50)}
+    and returns a dictionary where the key is the mod_id and the value 
+    is a list of submods (conflicts and requirements).
     """
-
+    
     data = pd.read_excel(filename, sheet_name=sheet_name)
     required_columns = {'id', 'conflicting id', 'must id'}
     if not required_columns.issubset(data.columns):
-        raise ValueError(f"Сторінка '{sheet_name}' повинна містити колонки: {required_columns}")
-    constraints_dict = {
-        row['id']: (row['conflicting id'], row['must id'])
-        for _, row in data.iterrows()
-    }
-
+        raise ValueError(f"Sheet '{sheet_name}' must contain columns: {required_columns}")
+    constraints_dict = {}
+    for _, row in data.iterrows():
+        mod_id = int(row['id'])
+        conflicts = row.get('conflicting id', '')
+        if pd.isna(conflicts): 
+            conflicts_list = []
+        elif isinstance(conflicts, str):
+            conflicts_list = [-int(x.strip()) for x in conflicts.split(',') if x.strip()]
+        else:
+            conflicts_list = [-int(conflicts)]
+        requirements = row.get('must id', '')
+        if pd.isna(requirements): 
+            requirements_list = []
+        elif isinstance(requirements, str):
+            requirements_list = [int(x.strip()) for x in requirements.split(',') if x.strip()]
+        else:
+            requirements_list = [int(requirements)]
+        constraints_dict[mod_id] = conflicts_list + requirements_list
+    
     return constraints_dict
+
 
 def satisfy(graph: dict[int, list[int]], user_choice: list[int],\
     all_mods: dict[int: (str, int)]) -> dict[int, bool]:
