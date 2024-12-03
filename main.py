@@ -124,6 +124,68 @@ def read_constraints(filename: str, sheet_name: str) -> dict[int, list[int]]:
     
     return constraints_dict
 
+import re
+from openpyxl import Workbook, load_workbook
+from openpyxl.styles import Font
+
+def write_modifications_to_excel(filename: str, sheet_name: str, input_data: str):
+    """
+    Parses the input data, processes compatible, required, and incompatible modifications, and writes them to an Excel file.
+    Adds color formatting to the header text for better readability.
+    
+    :param filename: Path to the Excel file.
+    :param sheet_name: Name of the new sheet to add.
+    :param input_data: Input string containing modifications in a specific format.
+    """
+    try:
+        required_format = r"Модифікації:.*сумісні.*Необхідні модифікації та підмодифікації:.*"
+        if not re.match(required_format, input_data):
+            print(input_data)
+            return
+        compatible = []
+        required = []
+        compatible_match = re.search(r"Модифікації:\s*(.*?)\s*(необхідні|$)", input_data, re.DOTALL)
+        if compatible_match:
+            compatible_data = compatible_match.group(1).strip()
+            compatible = [(int(mod.split(' - ')[0]), mod.split(' - ')[1].strip()) for mod in compatible_data.split(',') if mod]
+        required_match = re.search(r"Необхідні модифікації та підмодифікації:\s*(.*)", input_data, re.DOTALL)
+        if required_match:
+            required_data = required_match.group(1).strip()
+            required = [(int(mod.split(' - ')[0]), mod.split(' - ')[1].strip()) for mod in required_data.split(',') if mod]
+        try:
+            workbook = load_workbook(filename)
+        except FileNotFoundError:
+            workbook = Workbook()
+            if "Sheet" in workbook.sheetnames:
+                del workbook["Sheet"]
+
+        if sheet_name in workbook.sheetnames:
+            raise ValueError(f"Sheet '{sheet_name}' already exists in '{filename}'.")
+        sheet = workbook.create_sheet(title=sheet_name)
+        current_row = 1
+        header_font = Font(bold=True, color="FF0000")  
+        if compatible:
+            sheet.cell(row=current_row, column=1, value="Сумісні модифікації:")
+            sheet.cell(row=current_row, column=1).font = header_font
+            current_row += 1
+            for mod_id, description in compatible:
+                sheet.cell(row=current_row, column=1, value=mod_id)
+                sheet.cell(row=current_row, column=2, value=description)
+                current_row += 1
+        if required:
+            sheet.cell(row=current_row, column=1, value="Необхідні модифікації та підмодифікації:")
+            sheet.cell(row=current_row, column=1).font = header_font
+            current_row += 1
+            for mod_id, description in required:
+                sheet.cell(row=current_row, column=1, value=mod_id)
+                sheet.cell(row=current_row, column=2, value=description)
+                current_row += 1
+            workbook.save(filename)
+        print(f"Data successfully written to '{sheet_name}' in '{filename}'.")
+
+    except Exception as e:
+        print(input_data)
+
 
 def satisfy(graph: dict[int, list[int]], user_choice: list[int],\
     all_mods: dict[int: (str, int)]) -> dict[int, bool]:
@@ -196,5 +258,4 @@ def main():
 модифікації та підмодифікації: {', '.join(el for el in mods_to_return)}'
     except ValueError:
         return f'Модифікації: {', '.join(el for el in [f"{i} - {mods_dict[i][0]}" for i in user_input])} несумісні'
-
-print(main())
+write_modifications_to_excel("combined_modifications.xlsx", "result", main())
