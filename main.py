@@ -191,10 +191,10 @@ def main():
     try:
         mods = satisfy(read_constraints(combined_file, restrictions_file), user_input, mods_dict)
         mods = list(filter(lambda x: mods[x] is True, mods))
-        mods_to_return = [mods_dict[i] for i in mods]
-        return f'Модифікації {user_input} сумісні. Необхідні \
-модифікації та підмодифікації: {mods_to_return}'
+        mods_to_return = [f"{i} - {mods_dict[i][0]}" for i in mods]
+        return f'Модифікації: {', '.join(el for el in [f"{i} - {mods_dict[i][0]}" for i in user_input])} сумісні. Необхідні \
+модифікації та підмодифікації: {', '.join(el for el in mods_to_return)}'
     except ValueError:
-        return f'Модифікації {user_input} несумісні'
+        return f'Модифікації: {', '.join(el for el in [f"{i} - {mods_dict[i][0]}" for i in user_input])} несумісні'
 
 print(main())
