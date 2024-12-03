@@ -92,9 +92,6 @@ def read_exel_mods(filename: str, sheet_name: str) -> dict:
     }
     return modifications_dict
 
-
-
-
 def read_constraints(filename: str, sheet_name: str) -> dict:
     """
     Reads a specific sheet from an Excel file containing constraint data 
@@ -106,13 +103,14 @@ def read_constraints(filename: str, sheet_name: str) -> dict:
     :return: A dictionary {key(id): (type: str, value: any)}.
 
     >>> import pandas as pd
-    >>> data = {'id': [1, 2, 3], 'conflicting id': ['Max', 'Min', 'Fixed'], 'must id': [100, 10, 50]}
+    >>> data = {'id': [1, 2, 3], 'conflicting id': ['Max', 'Min', 'Fixed'], \
+'must id': [100, 10, 50]}
     >>> df = pd.DataFrame(data)
     >>> df.to_excel('test_constraints.xlsx', sheet_name='Constraints', index=False)
     >>> read_constraints('test_constraints.xlsx', 'Constraints')
     {1: ('Max', 100), 2: ('Min', 10), 3: ('Fixed', 50)}
     """
-    
+
     data = pd.read_excel(filename, sheet_name=sheet_name)
     required_columns = {'id', 'conflicting id', 'must id'}
     if not required_columns.issubset(data.columns):
@@ -121,7 +119,7 @@ def read_constraints(filename: str, sheet_name: str) -> dict:
         row['id']: (row['conflicting id'], row['must id'])
         for _, row in data.iterrows()
     }
-    
+
     return constraints_dict
 
 def satisfy(graph: dict[int, list[int]], user_choice: list[int],\
@@ -175,21 +173,24 @@ def satisfy(graph: dict[int, list[int]], user_choice: list[int],\
             use_modifications[mod_id] = False
     return use_modifications
 
-
-# test inputs, delete later
-
-print(satisfy(read_graph('restrictions.txt'), [1, 7], read_mods('modifications.txt')))
-# print(read_mods('modifications.txt'))
-# print(read_graph('restrictions.txt'))
-
 def main():
+    """
+    Main function that reads the input data from the terminal, reads the modifications
+    and constraints from the files, and determines whether the user's choice of modifications
+    is compatible with the constraints.
+    
+    Returns:
+    - str: A string indicating whether the user's choice of modifications is compatible
+    with the constraints.
+    """
     combined_file, modifications_file, restrictions_file, user_input = read_from_terminal()
     mods_dict = read_exel_mods(combined_file, modifications_file)
     try:
         mods = satisfy(read_constraints(combined_file, restrictions_file), user_input, mods_dict)
-        mods = list(filter(lambda x: mods[x] == True, mods))
+        mods = list(filter(lambda x: mods[x] is True, mods))
         mods_to_return = [mods_dict[i] for i in mods]
-        return f'Модифікації {user_input} сумісні. Необхідні модифікації та підмодифікації: {mods_to_return}'
+        return f'Модифікації {user_input} сумісні. Необхідні \
+модифікації та підмодифікації: {mods_to_return}'
     except ValueError:
         return f'Модифікації {user_input} несумісні'
 
