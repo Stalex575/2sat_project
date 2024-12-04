@@ -136,7 +136,7 @@ def write_modifications_to_excel(filename: str, sheet_name: str, input_data: str
                 del workbook["Sheet"]
 
         if sheet_name in workbook.sheetnames:
-            raise ValueError(f"Sheet '{sheet_name}' already exists in '{filename}'.")
+            del workbook[sheet_name]
         sheet = workbook.create_sheet(title=sheet_name)
         current_row = 1
         header_font = Font(bold=True, color="FF0000")
