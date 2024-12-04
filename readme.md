@@ -78,7 +78,7 @@ python [main.py](http://main.py/) --f "combined_modification.xlsx" --m "Modifica
 - **`filename`** — шлях до Excel-файлу.
 - **`sheet_name`** — назва аркуша для зчитування даних про обмеження.
 
-**`write_modifications_to_excel(filename: str, sheet_name: str, input_data: str)`**
+### **`write_modifications_to_excel(filename: str, sheet_name: str, input_data: str)`**
 Функція перевіряє формат вхідних даних на відповідність визначеному шаблону і записує дані на новий аркуш Excel-файлу. Заголовки для кожного типу модифікацій виділяє жирним червоним шрифтом. - ID та опис модифікацій записує у стовпці. Якщо виникає помилка, функція друкує вхідні дані для діагностики.
 
 Filename: Шлях до Excel-файлу
