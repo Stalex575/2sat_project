@@ -1,11 +1,12 @@
 """
 2SAT project
 """
+import re
 import argparse
 import pandas as pd
-import re
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font
+
 
 def read_from_terminal() -> tuple[str, str, list[int]]:
     """
@@ -23,51 +24,6 @@ def read_from_terminal() -> tuple[str, str, list[int]]:
     id_users = [int(x) for x in args.c.split(',')]
     return (args.f, args.m, args.r, id_users)
 
-def read_mods(filename:str) -> dict:
-    """
-Reads a file containing modification data and returns a dictionary
-where the key is the modification mod_id and the value is a tuple (name, user_visibility).
-Return dictionary {key(mod_id): (name,user_visibility)}
-:param filename: The path to the file containing the modification data.
-:return modifications_dict: A dictionary where the key is mod_id and the value\
-is a tuple (name: str, user_visibility: int).
-
-    """
-    with open(filename, encoding='utf-8') as f:
-        modifications_dict = {}
-        f.readline()
-        for i in f:
-            i = i.strip().split(';')
-            if len(i) != 3:
-                print('Неправильно написані дані, будь ласка, відкоригуйте файл!')
-                break
-            mod_id, name, user_visibility = i
-            modifications_dict[int(mod_id)] = (name.strip(),int(user_visibility))
-    return modifications_dict
-
-def read_graph(filename: str) -> dict[int: list[int]]:
-    """
-    Reads a file containing constraints and returns a dictionary where the key is the mod_id
-    and the value is a list of submods.
-    
-    Parameters:
-    - filename (str): The path to the file containing the constraints.
-    
-    Returns:
-    - dict[int: list[int]]: A dictionary where the key is the 
-    mod_id and the value is a list of submods.
-    """
-    constraints = {}
-    with open(filename, mode='r', encoding='utf-8') as f:
-        f.readline()
-        for line in f:
-            line = line.strip().split(';')
-            mod_id = int(line[0])
-            conflicts = line[1].strip().split(',')
-            requirements = line[2].strip().split(',')
-            constraints[mod_id] = ([-int(num) for num in conflicts \
-            if conflicts != ['']] + [int(num) for num in requirements if line[2] != ''])
-    return constraints
 
 def read_exel_mods(filename: str, sheet_name: str) -> dict:
     """
@@ -96,6 +52,7 @@ def read_exel_mods(filename: str, sheet_name: str) -> dict:
     }
     return modifications_dict
 
+
 def read_constraints(filename: str, sheet_name: str) -> dict[int, list[int]]:
     """
     Reads a specific sheet from an Excel file containing constraint data 
@@ -115,7 +72,7 @@ def read_constraints(filename: str, sheet_name: str) -> dict[int, list[int]]:
     >>> read_constraints(test_file, "Constraints")
     {1: [10], 2: [-3], 3: [-2, -11], 4: [12, 13]}
     """
-    
+
     data = pd.read_excel(filename, sheet_name=sheet_name)
     required_columns = {'id', 'conflicting id', 'must id'}
     if not required_columns.issubset(data.columns):
@@ -124,28 +81,28 @@ def read_constraints(filename: str, sheet_name: str) -> dict[int, list[int]]:
     for _, row in data.iterrows():
         mod_id = int(row['id'])
         conflicts = row.get('conflicting id', '')
-        if pd.isna(conflicts): 
+        if pd.isna(conflicts):
             conflicts_list = []
         elif isinstance(conflicts, str):
             conflicts_list = [-int(x.strip()) for x in conflicts.split(',') if x.strip()]
         else:
             conflicts_list = [-int(conflicts)]
         requirements = row.get('must id', '')
-        if pd.isna(requirements): 
+        if pd.isna(requirements):
             requirements_list = []
         elif isinstance(requirements, str):
             requirements_list = [int(x.strip()) for x in requirements.split(',') if x.strip()]
         else:
             requirements_list = [int(requirements)]
         constraints_dict[mod_id] = conflicts_list + requirements_list
-    
-    return constraints_dict
 
+    return constraints_dict
 
 
 def write_modifications_to_excel(filename: str, sheet_name: str, input_data: str):
     """
-    Parses the input data, processes compatible, required, and incompatible modifications, and writes them to an Excel file.
+    Parses the input data, processes compatible, required, 
+    and incompatible modifications, and writes them to an Excel file.
     Adds color formatting to the header text for better readability.
     
     :param filename: Path to the Excel file.
@@ -163,11 +120,14 @@ def write_modifications_to_excel(filename: str, sheet_name: str, input_data: str
         compatible_match = re.search(r"Модифікації:\s*(.*?)\s*(необхідні|$)", input_data, re.DOTALL)
         if compatible_match:
             compatible_data = compatible_match.group(1).strip()
-            compatible = [(int(mod.split(' - ')[0]), mod.split(' - ')[1].strip()) for mod in compatible_data.split(',') if mod]
-        required_match = re.search(r"Необхідні модифікації та підмодифікації:\s*(.*)", input_data, re.DOTALL)
+            compatible = [(int(mod.split(' - ')[0]), mod.split(' - ')[1].strip())\
+                for mod in compatible_data.split(',') if mod]
+        required_match = re.search(r"Необхідні модифікації та підмодифікації:\s*(.*)",\
+            input_data, re.DOTALL)
         if required_match:
             required_data = required_match.group(1).strip()
-            required = [(int(mod.split(' - ')[0]), mod.split(' - ')[1].strip()) for mod in required_data.split(',') if mod]
+            required = [(int(mod.split(' - ')[0]), mod.split(' - ')[1].strip()) \
+                for mod in required_data.split(',') if mod]
         try:
             workbook = load_workbook(filename)
         except FileNotFoundError:
@@ -179,7 +139,7 @@ def write_modifications_to_excel(filename: str, sheet_name: str, input_data: str
             raise ValueError(f"Sheet '{sheet_name}' already exists in '{filename}'.")
         sheet = workbook.create_sheet(title=sheet_name)
         current_row = 1
-        header_font = Font(bold=True, color="FF0000")  
+        header_font = Font(bold=True, color="FF0000")
         if compatible:
             sheet.cell(row=current_row, column=1, value="Сумісні модифікації:")
             sheet.cell(row=current_row, column=1).font = header_font
@@ -199,7 +159,8 @@ def write_modifications_to_excel(filename: str, sheet_name: str, input_data: str
             workbook.save(filename)
         print(f"Data successfully written to '{sheet_name}' in '{filename}'.")
 
-    except Exception:
+    except (ValueError, FileNotFoundError, PermissionError) as e:
+        print(f"An error occurred: {e}")
         print(input_data)
 
 
@@ -254,6 +215,7 @@ def satisfy(graph: dict[int, list[int]], user_choice: list[int],\
             use_modifications[mod_id] = False
     return use_modifications
 
+
 def main():
     """
     Main function that reads the input data from the terminal, reads the modifications
@@ -270,11 +232,15 @@ def main():
         mods = satisfy(read_constraints(combined_file, restrictions_file), user_input, mods_dict)
         mods = list(filter(lambda x: mods[x] is True, mods))
         mods_to_return = [f"{i} - {mods_dict[i][0]}" for i in mods]
-        return f'Модифікації: {', '.join(el for el in [f"{i} - {mods_dict[i][0]}" for i in user_input])} сумісні. Необхідні \
-модифікації та підмодифікації: {', '.join(el for el in mods_to_return)}'
+        return f'Модифікації: {', '.join(el for el in [f"{i} - {mods_dict[i][0]}" for i\
+            in user_input])} сумісні. Необхідні модифікації та підмодифікації: {', '.join\
+            (el for el in mods_to_return)}'
     except ValueError:
-        return f'Модифікації: {', '.join(el for el in [f"{i} - {mods_dict[i][0]}" for i in user_input])} несумісні'
-write_modifications_to_excel("combined_modifications.xlsx", "result", main())
+        return f'Модифікації: {', '.join(el for el in [f"{i} - {mods_dict[i][0]}" for\
+            i in user_input])} несумісні'
+
+
 if __name__ == '__main__':
     import doctest
     print(doctest.testmod())
+    write_modifications_to_excel("combined_modifications.xlsx", "result", main())
