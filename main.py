@@ -145,14 +145,7 @@ def write_modifications_to_excel(filename: str, sheet_name: str, input_data: str
         sheet = workbook.create_sheet(title=sheet_name)
         current_row = 1
         header_font = Font(bold=True, color="FF0000")
-        if compatible:
-            sheet.cell(row=current_row, column=1, value="Сумісні модифікації:")
-            sheet.cell(row=current_row, column=1).font = header_font
-            current_row += 1
-            for mod_id, description in compatible:
-                sheet.cell(row=current_row, column=1, value=mod_id)
-                sheet.cell(row=current_row, column=2, value=description)
-                current_row += 1
+        
         if required:
             sheet.cell(row=current_row, column=1, value="Необхідні модифікації та підмодифікації:")
             sheet.cell(row=current_row, column=1).font = header_font
