@@ -36,11 +36,14 @@ def read_exel_mods(filename: str, sheet_name: str) -> dict:
     :return: A dictionary {key(mod_id): (name: str, user_visibility: int)}.
 
     >>> import pandas as pd
+    >>> import os
     >>> data = {'id': [1, 2], 'mods': ['Mod A', 'Mod B'], 'user_visibility': [1, 0]}
     >>> df = pd.DataFrame(data)
-    >>> df.to_excel('test_mods.xlsx', sheet_name='Modifications', index=False)
-    >>> read_exel_mods('test_mods.xlsx', 'Modifications')
+    >>> test_file = 'test_mods.xlsx'
+    >>> df.to_excel(test_file, sheet_name='Modifications', index=False)
+    >>> read_exel_mods(test_file, 'Modifications')
     {1: ('Mod A', 1), 2: ('Mod B', 0)}
+    >>> os.remove(test_file)
     """
     data = pd.read_excel(filename, sheet_name=sheet_name)
     required_columns = {'id', 'mods', 'user_visibility'}
@@ -60,6 +63,7 @@ def read_constraints(filename: str, sheet_name: str) -> dict[int, list[int]]:
     is a list of submods (conflicts and requirements).
 
     >>> import pandas as pd
+    >>> import os
     >>> test_file = "test_constraints.xlsx"
     >>> data = {
     ...     "id": [1, 2, 3, 4],
@@ -71,6 +75,7 @@ def read_constraints(filename: str, sheet_name: str) -> dict[int, list[int]]:
     ...     df.to_excel(writer, sheet_name="Constraints", index=False)
     >>> read_constraints(test_file, "Constraints")
     {1: [10], 2: [-3], 3: [-2, -11], 4: [12, 13]}
+    >>> os.remove(test_file)
     """
 
     data = pd.read_excel(filename, sheet_name=sheet_name)
